@@ -3,414 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fundraiser</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Decentralised Fundraiser</title>
     <style>
-        :root {
-            --bg:         #080c0a;
-            --surface:    #0e1410;
-            --border:     #1c2a1f;
-            --border-hi:  #2d4233;
-            --green:      #22c55e;
-            --green-dim:  #16a34a;
-            --green-glow: rgba(34,197,94,.18);
-            --amber:      #f59e0b;
-            --red:        #ef4444;
-            --indigo:     #818cf8;
-            --text:       #d4e8d8;
-            --text-muted: #4a6650;
-            --text-dim:   #8aab90;
-            --mono:       'Space Mono', monospace;
-            --sans:       'DM Sans', sans-serif;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--sans);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 2.5rem 1rem 4rem;
-        }
-
-        /* ── Noise grain overlay ── */
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-            pointer-events: none; z-index: 0; opacity: .4;
-        }
-
-        .wrap { position: relative; z-index: 1; max-width: 660px; margin: 0 auto; }
-
-        /* ── Header ── */
-        .header { margin-bottom: 2.5rem; }
-
-        .network-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted);
-            background: var(--surface); border: 1px solid var(--border);
-            padding: 4px 10px; border-radius: 20px; margin-bottom: 1rem;
-            letter-spacing: .04em;
-        }
-        .network-pill .dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: var(--text-muted); transition: background .3s;
-        }
-        .network-pill.connected .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
-
-        h1 {
-            font-family: var(--mono);
-            font-size: clamp(1.5rem, 5vw, 2.2rem);
-            font-weight: 700;
-            color: #fff;
-            line-height: 1.15;
-            letter-spacing: -.03em;
-            word-break: break-word;
-        }
-        h1 .prefix { color: var(--green); }
-
-        .desc {
-            margin-top: .6rem;
-            font-size: .9rem;
-            color: var(--text-dim);
-            line-height: 1.6;
-            max-width: 520px;
-        }
-
-        /* ── Cards ── */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .card::after {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border-hi), transparent);
-        }
-        .card-label {
-            font-family: var(--mono);
-            font-size: .65rem;
-            letter-spacing: .12em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 1.1rem;
-        }
-
-        /* ── Progress ── */
-        .progress-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1rem;
-        }
-        .amounts {
-            display: flex; gap: 1.5rem;
-            font-family: var(--mono); font-size: .78rem;
-        }
-        .amounts .raised { color: var(--green); }
-        .amounts .goal   { color: var(--text-muted); }
-        .amounts strong  { font-size: 1rem; display: block; margin-top: .1rem; }
-
-        .bar-track {
-            background: #0f1a12;
-            border: 1px solid var(--border);
-            border-radius: 99px;
-            height: 10px;
-            overflow: hidden;
-            margin-bottom: .5rem;
-        }
-        .bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #16a34a, #4ade80);
-            border-radius: 99px;
-            transition: width .8s cubic-bezier(.16,1,.3,1);
-            box-shadow: 0 0 12px rgba(74,222,128,.35);
-            width: 0%;
-        }
-        .bar-pct {
-            font-family: var(--mono);
-            font-size: .7rem;
-            color: var(--text-muted);
-            text-align: right;
-        }
-
-        /* ── Stats grid ── */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: .75rem;
-            margin-top: 1.25rem;
-        }
-        .stat {
-            background: #0a110c;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: .9rem .75rem;
-            text-align: center;
-        }
-        .stat-val {
-            font-family: var(--mono);
-            font-size: 1rem;
-            font-weight: 700;
-            color: #e2f5e6;
-        }
-        .stat-lbl {
-            font-size: .68rem;
-            color: var(--text-muted);
-            margin-top: .3rem;
-            letter-spacing: .04em;
-        }
-
-        /* ── Status badges ── */
-        .badge {
-            font-family: var(--mono);
-            font-size: .65rem;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 4px;
-            letter-spacing: .06em;
-        }
-        .badge-active { color: var(--green); background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.2); }
-        .badge-ended  { color: var(--red);   background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.15); }
-        .badge-goal   { color: var(--amber); background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.15); }
-
-        /* ── Wallet card ── */
-        .wallet-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .wallet-addr {
-            font-family: var(--mono);
-            font-size: .72rem;
-            color: var(--text-muted);
-            word-break: break-all;
-            flex: 1;
-        }
-
-        /* ── Buttons ── */
-        button {
-            font-family: var(--sans);
-            border: none; border-radius: 8px;
-            padding: .6rem 1.3rem;
-            cursor: pointer;
-            font-size: .85rem;
-            font-weight: 500;
-            transition: opacity .15s, transform .1s, box-shadow .2s;
-            white-space: nowrap;
-        }
-        button:hover:not(:disabled)  { opacity: .88; transform: translateY(-1px); }
-        button:active:not(:disabled) { transform: translateY(0); }
-        button:disabled { opacity: .3; cursor: not-allowed; }
-
-        .btn-connect {
-            background: var(--surface);
-            border: 1px solid var(--border-hi);
-            color: var(--text-dim);
-        }
-        .btn-connect:hover:not(:disabled) { border-color: var(--green); color: var(--green); opacity: 1; }
-
-        .btn-donate {
-            background: var(--green);
-            color: #000;
-            font-weight: 600;
-            box-shadow: 0 0 20px var(--green-glow);
-        }
-        .btn-donate:hover:not(:disabled) { box-shadow: 0 0 30px rgba(34,197,94,.35); opacity: 1; }
-
-        .btn-refund   { background: #78350f; color: #fed7aa; border: 1px solid #92400e; }
-        .btn-withdraw { background: #1e1b4b; color: #c7d2fe; border: 1px solid #3730a3; }
-
-        /* ── Input ── */
-        .input-wrap {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-            margin-bottom: .75rem;
-        }
-        input[type=number] {
-            flex: 1;
-            padding: .65rem .9rem;
-            background: #0a110c;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: var(--mono);
-            font-size: .85rem;
-            outline: none;
-            transition: border-color .2s;
-        }
-        input[type=number]:focus { border-color: var(--green-dim); }
-        input[type=number]::placeholder { color: var(--text-muted); }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-        .input-hint {
-            font-size: .7rem;
-            color: var(--text-muted);
-            margin-bottom: .75rem;
-            font-family: var(--mono);
-        }
-
-        /* ── Status message ── */
-        #status {
-            font-size: .8rem;
-            min-height: 1.3em;
-            margin-top: .75rem;
-            padding: .5rem .75rem;
-            border-radius: 6px;
-            display: none;
-            font-family: var(--mono);
-        }
-        #status.visible { display: block; }
-        #status.ok  { background: rgba(34,197,94,.08); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
-        #status.err { background: rgba(239,68,68,.08); color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
-        #status.inf { background: rgba(129,140,248,.08); color: var(--indigo); border: 1px solid rgba(129,140,248,.2); }
-
-        /* ── Event log ── */
-        .event-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: .5rem 0;
-            border-bottom: 1px solid var(--border);
-            font-size: .78rem;
-        }
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #ddd;
+               max-width: 680px; margin: 0 auto; padding: 2rem 1rem; }
+        h1   { font-size: 1.4rem; margin-bottom: 0.2rem; }
+        .desc-text { color: #777; font-size: 0.9rem; margin: 0.2rem 0 2rem; }
+        .card    { background: #161616; border: 1px solid #2a2a2a;
+                   border-radius: 10px; padding: 1.4rem; margin: 1rem 0; }
+        .card h2 { margin: 0 0 1rem; font-size: 1rem; color: #eee; }
+        button   { border: none; border-radius: 6px; padding: 0.55rem 1.2rem;
+                   cursor: pointer; font-size: 0.85rem; margin-top: 0.5rem; }
+        .btn-connect  { background: #1e1e1e; border: 1px solid #444; color: #ccc; }
+        .btn-donate   { background: #059669; color: #fff; }
+        .btn-refund   { background: #b45309; color: #fff; }
+        .btn-withdraw { background: #4f46e5; color: #fff; }
+        button:disabled { background: #222; color: #444; cursor: not-allowed; }
+        input    { width: 100%; padding: 0.5rem 0.75rem; background: #111;
+                   border: 1px solid #333; border-radius: 6px; color: #ddd;
+                   font-size: 0.85rem; margin-top: 0.5rem; }
+        .bar-wrap  { background: #222; border-radius: 6px; height: 12px;
+                     margin: 0.75rem 0 0.4rem; overflow: hidden; }
+        .bar       { background: linear-gradient(to right, #059669, #34d399);
+                     height: 12px; transition: width 0.6s ease; }
+        .bar-label { display: flex; justify-content: space-between;
+                     font-size: 0.78rem; color: #555; margin-bottom: 0.5rem; }
+        .bar-pct   { font-size: 0.75rem; color: #555; text-align: right;
+                     margin-bottom: 0.25rem; }
+        .stats     { display: grid; grid-template-columns: repeat(3,1fr);
+                     gap: 0.75rem; margin: 1rem 0; }
+        .stat      { background: #111; border: 1px solid #222;
+                     border-radius: 8px; padding: 0.85rem; text-align: center; }
+        .stat-val  { font-size: 1.1rem; font-weight: 600; color: #eee; }
+        .stat-lbl  { font-size: 0.72rem; color: #555; margin-top: 0.2rem; }
+        .badge-active { color: #4ade80; font-size: 0.75rem; font-weight: 600;
+                        background: #052e16; padding: 2px 8px; border-radius: 4px; }
+        .badge-ended  { color: #f87171; font-size: 0.75rem; font-weight: 600;
+                        background: #2d0b0b; padding: 2px 8px; border-radius: 4px; }
+        .badge-goal   { color: #fbbf24; font-size: 0.75rem; font-weight: 600;
+                        background: #2d1f00; padding: 2px 8px; border-radius: 4px; }
+        #status    { font-size: 0.82rem; color: #888; margin-top: 0.75rem;
+                     min-height: 1.2em; }
+        #status.err { color: #f87171; }
+        #status.ok  { color: #4ade80; }
+        #status.inf { color: #818cf8; }
+        .addr      { font-size: 0.75rem; font-family: monospace; color: #555;
+                     word-break: break-all; }
+        .event-row { display: flex; justify-content: space-between;
+                     font-size: 0.78rem; color: #666; padding: 0.4rem 0;
+                     border-bottom: 1px solid #1a1a1a; }
         .event-row:last-child { border-bottom: none; }
-        .event-addr { font-family: var(--mono); color: var(--text-muted); }
-        .event-amt  { font-family: var(--mono); color: var(--green); }
-        .empty-msg  { color: var(--text-muted); font-size: .82rem; padding: .5rem 0; }
-
-        /* ── Dividers inside action card ── */
-        .action-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 1.25rem 0;
-        }
-
-        /* ── Loading skeleton pulse ── */
-        @keyframes pulse { 0%,100% { opacity:.4 } 50% { opacity:1 } }
-        .loading { animation: pulse 1.4s ease-in-out infinite; }
-
-        /* ── Responsive ── */
-        @media (max-width: 480px) {
-            .stats { grid-template-columns: repeat(3,1fr); gap: .5rem; }
-            .stat-val { font-size: .88rem; }
-            .amounts { gap: 1rem; }
-        }
+        .event-addr { font-family: monospace; }
+        .event-amt  { color: #4ade80; }
+        .input-hint { font-size: 0.72rem; color: #555; margin-top: 0.4rem; }
+        .action-note { font-size: 0.82rem; color: #666; margin: 0.5rem 0; }
+        .section-divider { border: none; border-top: 1px solid #222; margin: 1rem 0; }
     </style>
 </head>
 <body>
-<div class="wrap">
+    <h1 id="campaignTitle">Loading…</h1>
+    <p class="desc-text" id="campaignDesc"></p>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="network-pill" id="networkPill">
-            <span class="dot"></span>
-            <span id="networkLabel">Sepolia Testnet</span>
-        </div>
-        <h1><span class="prefix">↗ </span><span id="campaignTitle" class="loading">Loading…</span></h1>
-        <p class="desc" id="campaignDesc"></p>
-    </div>
-
-    <!-- Progress card -->
     <div class="card">
-        <div class="progress-header">
-            <span class="card-label">Campaign Progress</span>
-            <span id="statusBadge" class="badge">—</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h2 style="margin:0">Progress</h2>
+            <span id="statusBadge">&mdash;</span>
         </div>
-        <div class="amounts">
-            <div class="raised">
-                <span>Raised</span>
-                <strong id="raised">—</strong>
-            </div>
-            <div class="goal">
-                <span>Goal</span>
-                <strong id="goal">—</strong>
-            </div>
+        <div class="bar-label">
+            <span>Raised: <strong id="raised">&mdash;</strong></span>
+            <span>Goal: <strong id="goal">&mdash;</strong></span>
         </div>
-        <div class="bar-track" style="margin-top:1rem">
-            <div class="bar-fill" id="progressBar"></div>
+        <div class="bar-wrap">
+            <div class="bar" id="progressBar" style="width:0%"></div>
         </div>
         <div class="bar-pct" id="barPct">0%</div>
-
         <div class="stats">
             <div class="stat">
-                <div class="stat-val" id="donorCount">—</div>
+                <div class="stat-val" id="donorCount">&mdash;</div>
                 <div class="stat-lbl">Donors</div>
             </div>
             <div class="stat">
-                <div class="stat-val" id="timeLeft">—</div>
+                <div class="stat-val" id="timeLeft">&mdash;</div>
                 <div class="stat-lbl">Time Left</div>
             </div>
             <div class="stat">
-                <div class="stat-val" id="myDonation">—</div>
+                <div class="stat-val" id="myDonation">&mdash;</div>
                 <div class="stat-lbl">My Donation</div>
             </div>
         </div>
     </div>
 
-    <!-- Wallet card -->
     <div class="card">
-        <div class="card-label">Wallet</div>
-        <div class="wallet-row">
-            <button class="btn-connect" id="connectBtn" onclick="connectWallet()">
-                Connect MetaMask
-            </button>
-            <span class="wallet-addr" id="walletAddr">Not connected</span>
-        </div>
+        <h2>Wallet</h2>
+        <button class="btn-connect" id="connectBtn" onclick="connectWallet()">
+            Connect MetaMask
+        </button>
+        <p class="addr" id="walletAddr">Not connected</p>
     </div>
 
-    <!-- Actions card (hidden until connected) -->
     <div class="card" id="actionCard" style="display:none">
-        <div class="card-label">Actions</div>
-
-        <!-- Donate section -->
+        <h2>Actions</h2>
         <div id="donateSection">
-            <div class="input-wrap">
-                <input type="number" id="donateAmount"
-                       placeholder="1000000" step="1" min="1000000" />
-                <button class="btn-donate" onclick="donateFunds()">Donate Wei</button>
-            </div>
-            <!-- Minimum 1,000,000 wei enforced by contract MIN_AMOUNT -->
+            <input type="number" id="donateAmount"
+                   placeholder="1000000" step="1" min="1000000" />
             <p class="input-hint">Minimum: 1,000,000 wei &nbsp;·&nbsp; Network: Sepolia</p>
+            <button class="btn-donate" onclick="donateFunds()">Donate Wei</button>
         </div>
-
-        <!-- Refund section -->
         <div id="refundSection" style="display:none">
-            <div class="action-divider"></div>
-            <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem">
-                Campaign ended without reaching goal. You may claim your refund.
-            </p>
-            <button class="btn-refund" onclick="claimRefund()">↩ Claim Refund</button>
+            <hr class="section-divider">
+            <p class="action-note">Campaign ended without reaching goal. You may claim your refund.</p>
+            <button class="btn-refund" onclick="claimRefund()">Claim Refund</button>
         </div>
-
-        <!-- Withdraw section (owner only) -->
         <div id="withdrawSection" style="display:none">
-            <div class="action-divider"></div>
-            <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem">
-                Goal reached — withdraw funds to your owner wallet.
-            </p>
+            <hr class="section-divider">
+            <p class="action-note">Goal reached — withdraw funds to your owner wallet.</p>
             <button class="btn-withdraw" id="withdrawBtn" onclick="withdrawFunds()">
-                ⬆ Withdraw Funds (Owner)
+                Withdraw Funds (Owner)
             </button>
         </div>
-
-        <div id="status"></div>
+        <p id="status"></p>
     </div>
 
-    <!-- Recent donations -->
     <div class="card">
-        <div class="card-label">Recent Donations</div>
+        <h2>Recent Donations</h2>
         <div id="eventLog">
-            <p class="empty-msg">Connect wallet to load.</p>
+            <p style="color:#555;font-size:0.85rem">Connect wallet to load.</p>
         </div>
     </div>
-
-</div><!-- /wrap -->
 
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script>
@@ -496,14 +216,10 @@
         contract    = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
         const btn = document.getElementById("connectBtn");
-        btn.textContent = "Connected ✓";
+        btn.textContent = "Connected";
         btn.disabled    = true;
 
-        const pill = document.getElementById("networkPill");
-        pill.classList.add("connected");
-
-        document.getElementById("walletAddr").textContent =
-            userAddress.slice(0,6) + "···" + userAddress.slice(-4);
+        document.getElementById("walletAddr").textContent = userAddress;
         document.getElementById("actionCard").style.display = "block";
 
         await loadAllData();
@@ -525,7 +241,6 @@
         // Title & desc
         const titleEl = document.getElementById("campaignTitle");
         titleEl.textContent = titleStr || "Untitled Campaign";
-        titleEl.classList.remove("loading");
 
         const descEl = document.getElementById("campaignDesc");
         descEl.textContent = descStr || "";
@@ -552,13 +267,13 @@
         // Status badge
         const badge = document.getElementById("statusBadge");
         if (status.goalReached) {
-            badge.className   = "badge badge-goal";
+            badge.className   = "badge-goal";
             badge.textContent = "Goal Reached";
         } else if (status.isActive) {
-            badge.className   = "badge badge-active";
+            badge.className   = "badge-active";
             badge.textContent = "Active";
         } else {
-            badge.className   = "badge badge-ended";
+            badge.className   = "badge-ended";
             badge.textContent = "Ended";
         }
 
@@ -622,9 +337,9 @@
 
         // FIX: disable withdraw button if already withdrawn
         if (withdrawBtn) {
-            withdrawBtn.disabled   = hasWithdrawn;
+            withdrawBtn.disabled    = hasWithdrawn;
             withdrawBtn.textContent = hasWithdrawn
-                ? "Already Withdrawn" : "⬆ Withdraw Funds (Owner)";
+                ? "Already Withdrawn" : "Withdraw Funds (Owner)";
         }
     }
 
@@ -633,7 +348,7 @@
         try {
             const events = await contract.queryFilter(contract.filters.Donated());
             if (events.length === 0) {
-                log.innerHTML = "<p class='empty-msg'>No donations yet.</p>";
+                log.innerHTML = "<p style='color:#555;font-size:0.85rem'>No donations yet.</p>";
                 return;
             }
             log.innerHTML = events.slice(-10).reverse().map(e => {
@@ -645,7 +360,7 @@
                 </div>`;
             }).join("");
         } catch (_) {
-            log.innerHTML = "<p class='empty-msg'>Could not load events.</p>";
+            log.innerHTML = "<p style='color:#555;font-size:0.85rem'>Could not load events.</p>";
         }
     }
 
@@ -725,7 +440,7 @@
     function setStatus(msg, type) {
         const el = document.getElementById("status");
         el.textContent = msg;
-        el.className   = type + " visible";
+        el.className   = type;
     }
 </script>
 </body>
